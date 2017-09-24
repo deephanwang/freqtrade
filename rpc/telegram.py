@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import timedelta
 from typing import Callable, Any
 
@@ -42,6 +43,7 @@ def init(config: dict) -> None:
         CommandHandler('start', _start),
         CommandHandler('stop', _stop),
         CommandHandler('forcesell', _forcesell),
+        CommandHandler('forcesellall', _forcesellall),
         CommandHandler('performance', _performance),
     ]
     for handle in handles:
@@ -267,6 +269,50 @@ def _forcesell(bot: Bot, update: Update) -> None:
     except ValueError:
         send_msg('Invalid argument. Usage: `/forcesell <trade_id>`')
         logger.warning('/forcesell: Invalid argument received')
+
+
+@authorized_only
+def _forcesellall(bot: Bot, update: Update) -> None:
+    """
+    Handler for /forcesellall.
+    Sell all trades at current price
+    :param bot: telegram bot
+    :param update: message update
+    :return: None
+    """
+    if get_state() != State.RUNNING:
+        send_msg('`trader is not running`', bot=bot)
+        return
+
+    try:
+        trades = Trade.query.filter(Trade.is_open.is_(True)).all()
+
+        if len(trades) == 0
+            send_msg('`open trades not found`', bot=bot)
+            return
+
+        for trade in trades:
+            # Get current rate
+            current_rate = exchange.get_ticker(trade.pair)['bid']
+            # Get available balance
+            currency = trade.pair.split('_')[1]
+            balance = exchange.get_balance(currency)
+            # Execute sell
+            profit = trade.exec_sell_order(current_rate, balance)
+            message = '*{}:* Selling [{}]({}) at rate `{:f} (profit: {}%)`'.format(
+                trade.exchange.name,
+                trade.pair.replace('_', '/'),
+                exchange.get_pair_detail_url(trade.pair),
+                trade.close_rate,
+                round(profit, 2)
+            )
+            logger.info(message)
+            send_msg(message)
+            time.sleep(25)
+
+    except ValueError:
+        send_msg('Failed to sell all trades')
+        logger.warning('/forcesellall: Failed to sell all trades')
 
 
 @authorized_only
