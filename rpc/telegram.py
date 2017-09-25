@@ -287,7 +287,7 @@ def _forcesellall(bot: Bot, update: Update) -> None:
     try:
         trades = Trade.query.filter(Trade.is_open.is_(True)).all()
 
-        if len(trades) == 0
+        if len(trades) == 0:
             send_msg('`open trades not found`', bot=bot)
             return
 
