@@ -8,10 +8,15 @@ RUN tar zxvf ta-lib-0.4.0-src.tar.gz
 RUN cd ta-lib && ./configure && make && make install
 ENV LD_LIBRARY_PATH /usr/local/lib
 
+RUN apt-get install -y sqlite3 libsqlite3-dev
+RUN mkdir /db
+RUN /usr/bin/sqlite3 /db/tradesv2.dry_run.sqlite
+RUN /usr/bin/sqlite3 /db/tradesv2.sqlite
+
 RUN     mkdir -p /freqtrade
 WORKDIR /freqtrade
 
 ADD     ./requirements.txt /freqtrade/requirements.txt
 RUN     pip install -r requirements.txt
 ADD     . /freqtrade
-CMD     python main.py
+CMD     /bin/bash
