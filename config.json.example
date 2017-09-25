@@ -2,7 +2,7 @@
     "max_open_trades": 3,
     "stake_currency": "BTC",
     "stake_amount": 0.05,
-    "dry_run": false,
+    "dry_run": true,
     "minimal_roi": {
         "2880": 0.005,
         "720":  0.01,
